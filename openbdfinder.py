@@ -1,8 +1,6 @@
 import json
 import gi
-import pprint
 import urllib.request
-import urllib3
 import ssl
 
 gi.require_version('Gtk', '3.0')
@@ -20,6 +18,9 @@ class OpenBDFinder(Gtk.Window):
         self.set_border_width(5)
         self.set_default_size(600, 700)
 
+        # ------
+        #  GUI
+        # ------
         grid = Gtk.Grid()
         grid.set_column_spacing(5)
         self.add(grid)
@@ -111,6 +112,14 @@ class OpenBDFinder(Gtk.Window):
         grid.attach(lab09, 0, 9, 1, 1)
         grid.attach(scr19, 1, 9, 2, 1)
 
+    # -------------------------------------------------------------------------
+    #  on_button_clicked
+    #  click event for ISBN serach
+    #
+    #  arguments
+    #    button : instance of clicked button
+    #    entry  : instance of entry with ISBN number
+    # -------------------------------------------------------------------------
     def on_button_clicked(self, button, entry):
         isbn = entry.get_text().strip()
         query = self.url_openbd + isbn
@@ -118,6 +127,7 @@ class OpenBDFinder(Gtk.Window):
             html = (response.read())
             jason_data = json.loads(html)
 
+        # update information related to the ISBN
         self.ent12.set_text(jason_data[0]['summary']['title'])
         self.ent13.set_text(jason_data[0]['summary']['publisher'])
         self.ent14.set_text(jason_data[0]['summary']['volume'])
@@ -126,11 +136,13 @@ class OpenBDFinder(Gtk.Window):
         self.ent17.set_text(jason_data[0]['summary']['pubdate'])
         self.ent18.set_text(jason_data[0]['summary']['cover'])
 
+        # text context for collateral of the book with the ISBN
         msg = Gtk.TextBuffer()
         msg.set_text(jason_data[0]['onix']['CollateralDetail']['TextContent'][0]['Text'])
         self.dscrpt.set_buffer(msg)
 
-        uri = jason_data[0]['summary']['cover']
+        # handling of book cover picture
+        uri = (jason_data[0]['summary']['cover']).strip()
         r = urllib.request.urlopen(uri)
         loader = GdkPixbuf.PixbufLoader()
         loader.write(r.read())
