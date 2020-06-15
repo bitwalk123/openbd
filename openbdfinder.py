@@ -127,7 +127,7 @@ class RowFirst(Gtk.Entry):
     def __init__(self, grid, label1, label2):
         Gtk.Entry.__init__(self)
         self.set_hexpand(True)
-        self.set_text('9784047914742')
+        #self.set_text('9784047914742')
 
         lab = Gtk.Label(label=label1)
         lab.set_xalign(1.0)
