@@ -1,6 +1,5 @@
 import json
 import gi
-from io import BytesIO
 import pprint
 import urllib.request
 import urllib3
@@ -8,10 +7,10 @@ import ssl
 
 gi.require_version('Gtk', '3.0')
 from gi.repository import Gtk, GdkPixbuf
-#from gi.repository import WebKit2
 
 # PEP 476 -- Enabling certificate verification by default for stdlib http clients
 ssl._create_default_https_context = ssl._create_unverified_context
+
 
 class OpenBD(Gtk.Window):
 
@@ -62,7 +61,7 @@ class OpenBD(Gtk.Window):
 
         lab09 = Gtk.Label(label="詳細")
         lab09.set_xalign(1.0)
-        #self.ent19 = Gtk.Entry()
+        # self.ent19 = Gtk.Entry()
         scr19 = Gtk.ScrolledWindow()
         self.dscrpt = Gtk.TextView()
         self.dscrpt.set_wrap_mode(wrap_mode=Gtk.WrapMode.WORD)
@@ -100,37 +99,27 @@ class OpenBD(Gtk.Window):
         grid.attach(scr19, 1, 9, 2, 1)
 
     def on_button_clicked(self, button):
-        with urllib.request.urlopen('https://api.openbd.jp/v1/get?isbn=9784047914742') as response:
-            html = (response.read())
-            jason_data = json.loads(html)
-            pprint.pprint(jason_data, width=40)
-            self.ent12.set_text(jason_data[0]['summary']['title'])
-            self.ent13.set_text(jason_data[0]['summary']['publisher'])
-            self.ent14.set_text(jason_data[0]['summary']['volume'])
-            self.ent15.set_text(jason_data[0]['summary']['series'])
-            self.ent16.set_text(jason_data[0]['summary']['author'])
-            self.ent17.set_text(jason_data[0]['summary']['pubdate'])
-            self.ent18.set_text(jason_data[0]['summary']['cover'])
-            msg = Gtk.TextBuffer()
-            msg.set_text(jason_data[0]['onix']['CollateralDetail']['TextContent'][0]['Text'])
-            self.dscrpt.set_buffer(msg)
+        response = urllib.request.urlopen('https://api.openbd.jp/v1/get?isbn=9784047914742')
+        html = (response.read())
+        jason_data = json.loads(html)
+        pprint.pprint(jason_data, width=40)
+        self.ent12.set_text(jason_data[0]['summary']['title'])
+        self.ent13.set_text(jason_data[0]['summary']['publisher'])
+        self.ent14.set_text(jason_data[0]['summary']['volume'])
+        self.ent15.set_text(jason_data[0]['summary']['series'])
+        self.ent16.set_text(jason_data[0]['summary']['author'])
+        self.ent17.set_text(jason_data[0]['summary']['pubdate'])
+        self.ent18.set_text(jason_data[0]['summary']['cover'])
+        msg = Gtk.TextBuffer()
+        msg.set_text(jason_data[0]['onix']['CollateralDetail']['TextContent'][0]['Text'])
+        self.dscrpt.set_buffer(msg)
 
-            #http = urllib3.PoolManager()
-            #r = http.request('GET', jason_data[0]['summary']['cover'])
-            uri = jason_data[0]['summary']['cover']
-            print(uri)
-            r = urllib.request.urlopen(uri)
-            print(r.read())
-            #jpgdata = r.read()
-            #file_jpgdata = BytesIO(jpgdata)
-            #img = Gtk.Image.new_from_file(file_jpgdata)
-            loader = GdkPixbuf.PixbufLoader()
-            loader.write(r.read())
-            loader.close()
-            #p = GdkPixbuf.Pixbuf.new_from_bytes(file_jpgdata)
-            #self.image.set_from_pixbuf(loader.get_pixbuf())
-            #webview = WebKit.WebView()
-            #webview.load_uri(jason_data[0]['summary']['cover'])
+        uri = jason_data[0]['summary']['cover']
+        r = urllib.request.urlopen(uri)
+        loader = GdkPixbuf.PixbufLoader()
+        loader.write(r.read())
+        loader.close()
+
 
 win = OpenBD()
 win.connect("destroy", Gtk.main_quit)
