@@ -52,31 +52,31 @@ class OpenBDFinder(Gtk.Window):
 
         r = 2
         str_label = '書籍名'
-        self.ent12 = ui_row_typical(grid, r, str_label)
+        self.ent12 = RowTypical(grid, r, str_label)
 
         r = 3
         str_label = '出版社'
-        self.ent13 = ui_row_typical(grid, r, str_label)
+        self.ent13 = RowTypical(grid, r, str_label)
 
         r = 4
         str_label = '巻'
-        self.ent14 = ui_row_typical(grid, r, str_label)
+        self.ent14 = RowTypical(grid, r, str_label)
 
         r = 5
         str_label = 'シリーズ'
-        self.ent15 = ui_row_typical(grid, r, str_label)
+        self.ent15 = RowTypical(grid, r, str_label)
 
         r = 6
         str_label = '著者'
-        self.ent16 = ui_row_typical(grid, r, str_label)
+        self.ent16 = RowTypical(grid, r, str_label)
 
         r = 7
         str_label = '出版日'
-        self.ent17 = ui_row_typical(grid, r, str_label)
+        self.ent17 = RowTypical(grid, r, str_label)
 
         r = 8
         str_label = 'サムネールURI'
-        self.ent18 = ui_row_typical(grid, r, str_label)
+        self.ent18 = RowTypical(grid, r, str_label)
 
         r = 9
         str_label = '詳細'
@@ -134,7 +134,7 @@ class OpenBDFinder(Gtk.Window):
         self.img11.set_from_pixbuf(img)
 
 
-class ui_row_typical(Gtk.Entry):
+class RowTypical(Gtk.Entry):
     def __init__(self, grid, row, label):
         Gtk.Entry.__init__(self)
         lab = Gtk.Label(label=label)
@@ -146,8 +146,6 @@ class ui_row_typical(Gtk.Entry):
         grid.attach(lab, 0, row, 1, 1)
         grid.attach(self, 1, row, 2, 1)
 
-    #def get(self):
-    #    return self.ent
 
 win = OpenBDFinder()
 win.connect("destroy", Gtk.main_quit)
