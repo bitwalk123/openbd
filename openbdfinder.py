@@ -25,30 +25,15 @@ class OpenBDFinder(Gtk.Window):
         grid.set_column_spacing(5)
         self.add(grid)
 
-        r = 0
+        # r = 0
         str_label1 = 'ISBN13'
         str_label2 = '書籍情報取得'
-        lab00 = Gtk.Label(label=str_label1)
-        lab00.set_xalign(1.0)
-        ent10 = Gtk.Entry()
-        ent10.set_hexpand(True)
-        ent10.set_text('9784047914742')
-        but20 = Gtk.Button(label=str_label2)
-        but20.connect("clicked", self.on_button_clicked, ent10)
+        ent10 = RowFirst(grid, str_label1, str_label2)
+        (ent10.get_button()).connect("clicked", self.on_button_clicked, ent10)
 
-        grid.attach(lab00, 0, r, 1, 1)
-        grid.attach(ent10, 1, r, 1, 1)
-        grid.attach(but20, 2, r, 1, 1)
-
-        r = 1
+        # r = 1
         str_label = '書影'
-        lab01 = Gtk.Label(label=str_label)
-        lab01.set_xalign(1.0)
-        self.img11 = Gtk.Image()
-        self.img11.set_halign(Gtk.Align.START)
-
-        grid.attach(lab01, 0, r, 1, 1)
-        grid.attach(self.img11, 1, r, 2, 1)
+        self.img11 = RowSecond(grid, str_label)
 
         r = 2
         str_label = '書籍名'
@@ -80,20 +65,7 @@ class OpenBDFinder(Gtk.Window):
 
         r = 9
         str_label = '詳細'
-        lab09 = Gtk.Label(label=str_label)
-        lab09.set_xalign(1.0)
-        lab09.set_valign(Gtk.Align.START)
-        scr19 = Gtk.ScrolledWindow()
-        self.dscrpt = Gtk.TextView()
-        self.dscrpt.set_editable(False)
-        self.dscrpt.set_can_focus(False)
-        self.dscrpt.set_wrap_mode(wrap_mode=Gtk.WrapMode.WORD)
-        scr19.add(self.dscrpt)
-        scr19.set_hexpand(True)
-        scr19.set_vexpand(True)
-
-        grid.attach(lab09, 0, r, 1, 1)
-        grid.attach(scr19, 1, r, 2, 1)
+        self.dscrpt = RowLast(grid, r, str_label)
 
     # -------------------------------------------------------------------------
     #  on_button_clicked
@@ -105,10 +77,36 @@ class OpenBDFinder(Gtk.Window):
     # -------------------------------------------------------------------------
     def on_button_clicked(self, button, entry):
         isbn = entry.get_text().strip()
+        if len(isbn) == 0:
+            return
+
         query = self.url_openbd + isbn
         with urllib.request.urlopen(query) as response:
             html = (response.read())
             jason_data = json.loads(html)
+
+        if jason_data[0] is None:
+            print("データが見つかりません")
+            dialog = Gtk.MessageDialog(parent=self,
+                                       flags=0,
+                                       message_type=Gtk.MessageType.WARNING,
+                                       buttons=Gtk.ButtonsType.OK,
+                                       text="データが見つかりません。")
+            dialog.run()
+            dialog.destroy()
+            return
+
+        # handling of book cover picture
+        uri = (jason_data[0]['summary']['cover']).strip()
+        if len(uri) > 0:
+            r = urllib.request.urlopen(uri)
+            loader = GdkPixbuf.PixbufLoader()
+            loader.write(r.read())
+            loader.close()
+            img_cover = loader.get_pixbuf()
+            self.img11.set_from_pixbuf(img_cover)
+        else:
+            self.img11.clear()
 
         # update information related to the ISBN
         self.ent12.set_text(jason_data[0]['summary']['title'])
@@ -124,27 +122,69 @@ class OpenBDFinder(Gtk.Window):
         msg.set_text(jason_data[0]['onix']['CollateralDetail']['TextContent'][0]['Text'])
         self.dscrpt.set_buffer(msg)
 
-        # handling of book cover picture
-        uri = (jason_data[0]['summary']['cover']).strip()
-        r = urllib.request.urlopen(uri)
-        loader = GdkPixbuf.PixbufLoader()
-        loader.write(r.read())
-        loader.close()
-        img = loader.get_pixbuf()
-        self.img11.set_from_pixbuf(img)
+
+class RowFirst(Gtk.Entry):
+    def __init__(self, grid, label1, label2):
+        Gtk.Entry.__init__(self)
+        self.set_hexpand(True)
+        self.set_text('9784047914742')
+
+        lab = Gtk.Label(label=label1)
+        lab.set_xalign(1.0)
+        self.but = Gtk.Button(label=label2)
+
+        grid.attach(lab, 0, 0, 1, 1)
+        grid.attach(self, 1, 0, 1, 1)
+        grid.attach(self.but, 2, 0, 1, 1)
+
+    def get_button(self):
+        return self.but
+
+
+class RowSecond(Gtk.Image):
+    def __init__(self, grid, label):
+        Gtk.Image.__init__(self)
+        self.set_halign(Gtk.Align.START)
+
+        lab = Gtk.Label(label=label)
+        lab.set_xalign(1.0)
+
+        grid.attach(lab, 0, 1, 1, 1)
+        grid.attach(self, 1, 1, 2, 1)
 
 
 class RowTypical(Gtk.Entry):
     def __init__(self, grid, row, label):
         Gtk.Entry.__init__(self)
-        lab = Gtk.Label(label=label)
-        lab.set_xalign(1.0)
         self.set_editable(False)
         self.set_can_focus(False)
         self.set_hexpand(True)
 
+        lab = Gtk.Label(label=label)
+        lab.set_xalign(1.0)
+
         grid.attach(lab, 0, row, 1, 1)
         grid.attach(self, 1, row, 2, 1)
+
+
+class RowLast(Gtk.TextView):
+    def __init__(self, grid, row, label):
+        Gtk.TextView.__init__(self)
+        self.set_editable(False)
+        self.set_can_focus(False)
+        self.set_wrap_mode(wrap_mode=Gtk.WrapMode.WORD)
+
+        lab = Gtk.Label(label=label)
+        lab.set_xalign(1.0)
+        lab.set_valign(Gtk.Align.START)
+
+        scr = Gtk.ScrolledWindow()
+        scr.add(self)
+        scr.set_hexpand(True)
+        scr.set_vexpand(True)
+
+        grid.attach(lab, 0, row, 1, 1)
+        grid.attach(scr, 1, row, 2, 1)
 
 
 win = OpenBDFinder()
