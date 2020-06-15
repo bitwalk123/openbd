@@ -117,7 +117,9 @@ class OpenBD(Gtk.Window):
 
             #http = urllib3.PoolManager()
             #r = http.request('GET', jason_data[0]['summary']['cover'])
-            r = urllib.request.urlopen(jason_data[0]['summary']['cover'])
+            uri = jason_data[0]['summary']['cover']
+            print(uri)
+            r = urllib.request.urlopen(uri)
             print(r.read())
             #jpgdata = r.read()
             #file_jpgdata = BytesIO(jpgdata)
