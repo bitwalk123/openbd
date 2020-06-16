@@ -9,6 +9,14 @@ from gi.repository import Gtk, Gdk, GdkPixbuf
 # PEP 476 -- Enabling certificate verification by default for stdlib http clients
 ssl._create_default_https_context = ssl._create_unverified_context
 
+# -----------------------------------------------------------------------------
+# CSS
+FINDER_CSS = '''
+#Base {
+    margin: 5px;
+    font-size: x-large;
+}'''
+
 
 class OpenBDFinder(Gtk.Window):
     url_openbd = 'https://api.openbd.jp/v1/get?isbn='
@@ -18,12 +26,18 @@ class OpenBDFinder(Gtk.Window):
         self.set_border_width(5)
         self.set_default_size(600, 700)
 
+        # CSS
+        provider = Gtk.CssProvider()
+        provider.load_from_data(FINDER_CSS.encode('utf-8'))
+
         # ------
         #  GUI
         # ------
-        grid = Gtk.Grid()
-        grid.set_column_spacing(5)
+        grid = Gtk.Grid(name="Base")
+        grid.set_column_spacing(10)
         self.add(grid)
+        context = grid.get_style_context()
+        context.add_provider(provider, Gtk.STYLE_PROVIDER_PRIORITY_USER)
 
         # r = 0
         str_label1 = 'ISBN13'
@@ -126,7 +140,7 @@ class RowFirst(Gtk.Entry):
     def __init__(self, grid, label1, label2):
         Gtk.Entry.__init__(self)
         self.set_hexpand(True)
-        #self.set_text('9784047914742')
+        # self.set_text('9784047914742')
 
         lab = Gtk.Label(label=label1)
         lab.set_xalign(1.0)
@@ -147,6 +161,7 @@ class RowSecond(Gtk.Image):
 
         lab = Gtk.Label(label=label)
         lab.set_xalign(1.0)
+        lab.set_valign(Gtk.Align.START)
 
         grid.attach(lab, 0, 1, 1, 1)
         grid.attach(self, 1, 1, 2, 1)
