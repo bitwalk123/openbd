@@ -86,7 +86,6 @@ class OpenBDFinder(Gtk.Window):
             jason_data = json.loads(html)
 
         if jason_data[0] is None:
-            print("データが見つかりません")
             dialog = Gtk.MessageDialog(parent=self,
                                        flags=0,
                                        message_type=Gtk.MessageType.WARNING,
